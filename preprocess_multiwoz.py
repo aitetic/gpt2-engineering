@@ -504,18 +504,19 @@ def createDelexData():
 
 
 def loadDataMultiWoz():
-    data_url = os.path.join(DATA_DIR, 'multi-woz-2.1/data.json')
-    dataset_url = "https://www.repository.cam.ac.uk/bitstream/handle/1810/294507/MULTIWOZ2.1.zip?sequence=1&isAllowed=y"
-    download_path = os.path.join(DATA_DIR, 'multi-woz')
+    data_url = os.path.join(DATA_DIR, "multiwoz-2.1/data.json")
+    local_dataset_path = "data/MULTIWOZ2.1.zip"
+    download_path = os.path.join(DATA_DIR, 'multiwoz-2.1')
     extract_path = os.path.join(download_path, 'MULTIWOZ2.1')
     os.makedirs(download_path, exist_ok=True)
 
     if not os.path.exists(data_url):
-        print("Downloading and unzipping the MultiWOZ dataset")
-        resp = urllib.request.urlopen(dataset_url)
-        zip_ref = ZipFile(BytesIO(resp.read()))
-        zip_ref.extractall(download_path)
-        zip_ref.close()
+        if not os.path.exists(local_dataset_path):
+            raise FileNotFoundError(f"Archive not found at: {local_dataset_path}")
+
+        print(f"Unzipping: \"{local_dataset_path}\" dataset from local archive")
+        with ZipFile(local_dataset_path, 'r') as zip_ref:
+            zip_ref.extractall(download_path)
 
         moveFiles(src_path=extract_path, dst_path=download_path)
         return
@@ -878,14 +879,14 @@ def buildDictionaries(word_freqs_usr, word_freqs_sys, word_freqs_histoy, lexical
         json.dump(dicts[2], f, indent=2)
 
 
-def main():
-    if sys.argv[1] == 'delex':
+def main(mode: str):
+    if mode == 'delex':
         print('MultiWoz Create delexicalized dialogues. Get yourself a coffee, this might take a while.')
         if not os.path.isfile(os.path.join(DATA_DIR, 'multi-woz/delex.json')):
             data = createDelexData()
         else:
             data = json.load(open(os.path.join(DATA_DIR, 'multi-woz/delex.json')))
-    elif sys.argv[1] == 'lexical':
+    elif mode == 'lexical':
         print('MultiWoz Create lexicalized dialogues. Get yourself a coffee, this might take a while.')
         if not os.path.isfile(os.path.join(DATA_DIR, 'multi-woz/lex.json')):
             data = createLexicalData()
@@ -904,4 +905,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+
+    mode = "delex"
+    mode = sys.argv[1] if len(sys.argv) > 1 else mode
+    main(mode)
