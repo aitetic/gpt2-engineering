@@ -15,7 +15,7 @@ from tqdm import tqdm
 import numpy as np
 
 #from utils.multiwoz import dbPointer
-#from utils.multiwoz import delexicalize
+from utils.multiwoz import delexicalize
 
 from utils.multiwoz.nlp import normalize, normalize_lexical, normalize_beliefstate, normalize_mine
 
